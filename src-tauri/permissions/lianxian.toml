@@ -1,0 +1,12 @@
+[[permission]]
+identifier = "allow-lianxian"
+description = "Allow board-linking capture and click commands"
+commands.allow = [
+  "lianxian_cursor_window_info",
+  "lianxian_find_window",
+  "lianxian_capture_window",
+  "lianxian_click",
+  "lianxian_client_to_screen",
+  "lianxian_is_window_valid",
+  "lianxian_is_ctrl_down",
+]

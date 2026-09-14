@@ -62,6 +62,7 @@
         @click="showOpeningBookDialog = true"
         :title="$t('toolbar.openingBook')"
       />
+      <LianxianMenu />
     </div>
 
     <div class="toolbar-center">
@@ -161,7 +162,9 @@
   import NotationTextDialog from './NotationTextDialog.vue'
   import ReviewAnalysisDialog from './ReviewAnalysisDialog.vue'
   import OpeningBookDialog from './OpeningBookDialog.vue'
+  import LianxianMenu from './LianxianMenu.vue'
   import { useInterfaceSettings } from '../composables/useInterfaceSettings'
+  import { useLianxian } from '../composables/useLianxian'
 
   const { t } = useI18n()
   const gameState: any = inject('game-state')
@@ -214,8 +217,9 @@
   const isAnalyzing = computed(() => engineState.isThinking?.value)
 
   // Check if match is running to disable certain interactions
+  const { isLinking } = useLianxian()
   const isMatchRunning = computed(() => {
-    return jaiEngine?.isMatchRunning?.value || false
+    return jaiEngine?.isMatchRunning?.value || isLinking.value
   })
 
   // Get the currently loaded engine's ID

@@ -20,6 +20,16 @@ export const useImageRecognition = () => {
       console.warn('Image recognition is disabled in this build.')
       return Promise.resolve()
     },
+    processImageElement: async (
+      _img: HTMLImageElement
+    ): Promise<DetectionBox[]> => {
+      console.warn('Image recognition is disabled in this build.')
+      return []
+    },
+    processDataUrl: async (_dataUrl: string): Promise<DetectionBox[]> => {
+      console.warn('Image recognition is disabled in this build.')
+      return []
+    },
     drawBoundingBoxes: (
       _boxes: DetectionBox[],
       _imgElement: HTMLImageElement,

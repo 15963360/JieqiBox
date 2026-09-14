@@ -513,57 +513,50 @@ export const useImageRecognition = () => {
     })
   }
 
-  // Process image recognition
-  const processImage = async (file: File): Promise<void> => {
+  const inferFromImage = async (img: HTMLImageElement): Promise<DetectionBox[]> => {
+    await initializeModel()
+    if (!session.value) {
+      throw new Error('Model is not loaded')
+    }
+    inputImage.value = img
+    const prep = await preprocess(img)
+    const inputName = session.value.inputNames.includes('images')
+      ? 'images'
+      : session.value.inputNames[0]
+    const feeds = { [inputName]: prep.tensor }
+    const results = await session.value.run(feeds)
+    const firstOut = results.output0 || results[Object.keys(results)[0]]
+    const outputData = firstOut.data as unknown as number[]
+    const outShape = firstOut.dims as number[]
+    const boxes = postprocess(outputData, outShape, prep.meta)
+    detectedBoxes.value = boxes
+    return boxes
+  }
+
+  const loadImageFromUrl = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = url
+    })
+
+  const processImageElement = async (
+    img: HTMLImageElement
+  ): Promise<DetectionBox[]> => {
     try {
       isProcessing.value = true
-      status.value = t('positionEditor.imageRecognitionStatus.loadingImage')
-
-      // Initialize model
-      await initializeModel()
-
-      // Create image element
-      const img = new Image()
-      const imageUrl = URL.createObjectURL(file)
-
-      await new Promise<void>((resolve, reject) => {
-        img.onload = () => resolve()
-        img.onerror = reject
-        img.src = imageUrl
-      })
-
-      inputImage.value = img
-
       status.value = t(
         'positionEditor.imageRecognitionStatus.preprocessingImage'
       )
-      const prep = await preprocess(img)
-
       status.value = t(
         'positionEditor.imageRecognitionStatus.runningModelInference'
       )
-      // More robust selection of input name (many exported YOLO models use 'images' as input name)
-      const inputName = session.value!.inputNames.includes('images')
-        ? 'images'
-        : session.value!.inputNames[0]
-      const feeds = { [inputName]: prep.tensor }
-      const results = await session.value!.run(feeds)
-
-      const firstOut = results.output0 || results[Object.keys(results)[0]]
-      const outputData = firstOut.data as unknown as number[]
-      const outShape = firstOut.dims as number[]
-
-      status.value = t(
-        'positionEditor.imageRecognitionStatus.postProcessingResults'
-      )
-      const boxes = postprocess(outputData, outShape, prep.meta)
-      detectedBoxes.value = boxes
-
+      const boxes = await inferFromImage(img)
       status.value = t(
         'positionEditor.imageRecognitionStatus.recognitionCompleted'
       )
-
-      // Do not revoke immediately; keep the blob URL while the image is displayed
+      return boxes
     } catch (error) {
       console.error('Image processing failed:', error)
       status.value = t(
@@ -579,6 +572,19 @@ export const useImageRecognition = () => {
     } finally {
       isProcessing.value = false
     }
+  }
+
+  const processDataUrl = async (dataUrl: string): Promise<DetectionBox[]> => {
+    const img = await loadImageFromUrl(dataUrl)
+    return processImageElement(img)
+  }
+
+  // Process image recognition
+  const processImage = async (file: File): Promise<void> => {
+    status.value = t('positionEditor.imageRecognitionStatus.loadingImage')
+    const imageUrl = URL.createObjectURL(file)
+    const img = await loadImageFromUrl(imageUrl)
+    await processImageElement(img)
   }
 
   // Update board grid
@@ -650,6 +656,8 @@ export const useImageRecognition = () => {
     outputCanvas,
     showBoundingBoxes,
     processImage,
+    processImageElement,
+    processDataUrl,
     drawBoundingBoxes,
     updateBoardGrid,
     initializeModel,

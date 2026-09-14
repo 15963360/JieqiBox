@@ -389,8 +389,8 @@
   import {
     useImageRecognition,
     type DetectionBox,
-    LABELS,
   } from '@/composables/image-recognition'
+  import { convertDetectionToPieceName } from '@/utils/recognitionBoard'
   import { useInterfaceSettings } from '@/composables/useInterfaceSettings'
   import { resolvePieceImage } from '@/utils/pieceImages'
 
@@ -1241,7 +1241,10 @@
       for (let col = 0; col < boardGrid.value[row].length; col++) {
         const detection = boardGrid.value[row][col]
         if (detection) {
-          const pieceName = convertDetectionToPieceName(detection)
+          let pieceName = convertDetectionToPieceName(detection)
+          if (pieceName === 'unknown') {
+            pieceName = row < 5 ? 'black_unknown' : 'red_unknown'
+          }
           if (pieceName) {
             const piece: Piece = {
               id: Date.now() + mtRandom(),
@@ -1261,56 +1264,6 @@
 
     // Reclassify dark pieces
     reclassifyAllDarkPieces()
-  }
-
-  const convertDetectionToPieceName = (
-    detection: DetectionBox
-  ): string | null => {
-    const label = LABELS[detection.labelIndex]
-    if (!label) return null
-
-    const labelName = label.name
-
-    // Convert piece name
-    if (labelName === 'r_general') return 'red_king'
-    if (labelName === 'r_advisor') return 'red_advisor'
-    if (labelName === 'r_elephant') return 'red_elephant'
-    if (labelName === 'r_horse') return 'red_horse'
-    if (labelName === 'r_chariot') return 'red_chariot'
-    if (labelName === 'r_cannon') return 'red_cannon'
-    if (labelName === 'r_soldier') return 'red_pawn'
-
-    if (labelName === 'b_general') return 'black_king'
-    if (labelName === 'b_advisor') return 'black_advisor'
-    if (labelName === 'b_elephant') return 'black_elephant'
-    if (labelName === 'b_horse') return 'black_horse'
-    if (labelName === 'b_chariot') return 'black_chariot'
-    if (labelName === 'b_cannon') return 'black_cannon'
-    if (labelName === 'b_soldier') return 'black_pawn'
-
-    // Dark pieces
-    if (labelName.startsWith('dark_')) {
-      const baseName = labelName.substring(5)
-      if (baseName === 'r_advisor') return 'red_unknown'
-      if (baseName === 'r_cannon') return 'red_unknown'
-      if (baseName === 'r_chariot') return 'red_unknown'
-      if (baseName === 'r_elephant') return 'red_unknown'
-      if (baseName === 'r_general') return 'red_unknown'
-      if (baseName === 'r_horse') return 'red_unknown'
-      if (baseName === 'r_soldier') return 'red_unknown'
-
-      if (baseName === 'b_advisor') return 'black_unknown'
-      if (baseName === 'b_cannon') return 'black_unknown'
-      if (baseName === 'b_chariot') return 'black_unknown'
-      if (baseName === 'b_elephant') return 'black_unknown'
-      if (baseName === 'b_general') return 'black_unknown'
-      if (baseName === 'b_horse') return 'black_unknown'
-      if (baseName === 'b_soldier') return 'black_unknown'
-    }
-
-    if (labelName === 'dark') return 'red_unknown' // Default dark piece to red
-
-    return null
   }
 
   const getDetectedPieceDisplayName = (detection: DetectionBox): string => {

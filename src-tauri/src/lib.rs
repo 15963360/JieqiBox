@@ -17,6 +17,7 @@ use std::os::unix::fs::PermissionsExt;
 use clipboard::{ClipboardContext, ClipboardProvider};
 
 mod opening_book;
+mod lianxian;
 use opening_book::{JieqiOpeningBook, MoveData, OpeningBookStats, AddEntryRequest};
 
 // -------------------------------------------------------------
@@ -883,6 +884,14 @@ pub fn run() {
             opening_book_import_entries,
             opening_book_export_db,
             opening_book_import_db,
+            // Board linking (连线)
+            lianxian::lianxian_cursor_window_info,
+            lianxian::lianxian_find_window,
+            lianxian::lianxian_capture_window,
+            lianxian::lianxian_click,
+            lianxian::lianxian_client_to_screen,
+            lianxian::lianxian_is_window_valid,
+            lianxian::lianxian_is_ctrl_down,
             // Android-specific commands
             #[cfg(target_os = "android")]
             get_bundle_identifier,

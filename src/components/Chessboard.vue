@@ -258,14 +258,14 @@
             @click="pasteFenFromClipboard"
             size="small"
             color="button"
-            :disabled="isMatchRunning"
+            :disabled="isBoardLocked"
             >{{ $t('chessboard.pasteFen') }}</v-btn
           >
           <v-btn
             @click="inputFenStringWithArrow"
             size="small"
             color="button"
-            :disabled="isMatchRunning"
+            :disabled="isBoardLocked"
             >{{
               isAndroid
                 ? $t('chessboard.inputCopyFen')
@@ -276,7 +276,7 @@
             @click="setupNewGameWithArrow"
             size="small"
             color="button"
-            :disabled="isMatchRunning"
+            :disabled="isBoardLocked"
             >{{ $t('chessboard.newGame') }}</v-btn
           >
         </template>
@@ -285,7 +285,7 @@
           @click="clearUserDrawings"
           size="small"
           color="error"
-          :disabled="isMatchRunning"
+          :disabled="isBoardLocked"
           >{{ $t('chessboard.clearDrawings') }}</v-btn
         >
       </div>
@@ -300,6 +300,7 @@
         :onCancel="onCancelClearHistory"
       />
     </div>
+    <LianxianStatusBar v-if="!props.previewMode" />
 
     <!-- Position Chart -->
     <EvaluationChart
@@ -328,6 +329,8 @@
   import { useInterfaceSettings } from '@/composables/useInterfaceSettings'
   import ClearHistoryConfirmDialog from './ClearHistoryConfirmDialog.vue'
   import EvaluationChart from './EvaluationChart.vue'
+  import LianxianStatusBar from './LianxianStatusBar.vue'
+  import { useLianxian } from '@/composables/useLianxian'
   import { MATE_SCORE_BASE } from '@/utils/constants'
   import { isAndroidPlatform } from '@/utils/platform'
   import { validateJieqiFen } from '@/utils/fenValidator'
@@ -399,9 +402,15 @@
   const jaiEngine = inject('jai-engine-state') as any
 
   // Check if match is running to disable certain interactions
+  const { isLinking } = useLianxian()
+
   const isMatchRunning = computed(() => {
     return jaiEngine?.isMatchRunning?.value || false
   })
+
+  const isBoardLocked = computed(
+    () => isMatchRunning.value || isLinking.value
+  )
 
   const {
     pieces,
@@ -544,8 +553,7 @@
 
   // Encapsulated click handling
   const boardClick = (e: MouseEvent) => {
-    // Disable manual moves during match running
-    if (isMatchRunning.value) {
+    if (isBoardLocked.value) {
       return
     }
 
@@ -577,7 +585,7 @@
   // Right-click drawing handlers
   const handleRightMouseDown = (e: MouseEvent) => {
     e.preventDefault()
-    if (isMatchRunning.value) return
+    if (isBoardLocked.value) return
 
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
     const xp = ((e.clientX - rect.left) / rect.width) * 100
@@ -970,8 +978,7 @@
 
   // Wrap original methods (now just call the original method, arrow clearing is triggered automatically)
   const setupNewGameWithArrow = () => {
-    // Disable during match running
-    if (isMatchRunning.value) {
+    if (isBoardLocked.value) {
       return
     }
     // Stop engine analysis before starting new game to prevent continued thinking
@@ -981,8 +988,7 @@
     setupNewGame()
   }
   const inputFenStringWithArrow = () => {
-    // Disable during match running
-    if (isMatchRunning.value) {
+    if (isBoardLocked.value) {
       return
     }
     // Stop engine analysis before inputting FEN to prevent continued thinking
@@ -995,8 +1001,7 @@
 
   // Paste FEN from clipboard functionality
   const pasteFenFromClipboard = async () => {
-    // Disable during match running
-    if (isMatchRunning.value) {
+    if (isBoardLocked.value) {
       return
     }
     // Stop engine analysis before pasting FEN to prevent continued thinking

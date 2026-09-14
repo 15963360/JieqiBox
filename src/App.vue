@@ -8,6 +8,7 @@
   import FlipPromptDialog from './components/FlipPromptDialog.vue'
   import FenInputDialog from './components/FenInputDialog.vue'
   import GameEndDialog from './components/GameEndDialog.vue'
+  import LianxianCaptureOverlay from './components/LianxianCaptureOverlay.vue'
 
   import { useChessGame } from './composables/useChessGame'
   import { useUciEngine } from './composables/useUciEngine'
@@ -60,6 +61,7 @@
   provide('game-state', game)
   provide('engine-state', engine)
   provide('jai-engine-state', jaiEngine)
+  ;(window as any).__GAME_STATE__ = game
 
   // Provide the FEN input dialog state from game state
   provide('fen-input-dialog-visible', game.isFenInputDialogVisible)
@@ -132,6 +134,7 @@
         :game-result="game.gameEndResult.value"
         :on-close="() => (game.isGameEndDialogVisible.value = false)"
       />
+      <LianxianCaptureOverlay />
     </div>
   </div>
 </template>

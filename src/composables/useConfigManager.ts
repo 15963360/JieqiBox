@@ -73,6 +73,10 @@ interface ConfigData {
     aiSide: 'red' | 'black'
     showEngineAnalysis: boolean
   }
+  lianxianSettings: {
+    schemes: string
+    defaultSchemeId: string
+  }
   uciOptions: Record<string, Record<string, string | number | boolean>>
   jaiOptions: Record<string, Record<string, string | number | boolean>>
   locale: string
@@ -143,6 +147,10 @@ const defaultConfig: ConfigData = {
     isHumanVsAiMode: false,
     aiSide: 'black',
     showEngineAnalysis: false,
+  },
+  lianxianSettings: {
+    schemes: '[]',
+    defaultSchemeId: '',
   },
   uciOptions: {},
   jaiOptions: {},
@@ -227,6 +235,10 @@ export function useConfigManager() {
           gameSettings: {
             ...defaultConfig.gameSettings,
             ...parsedConfig.gameSettings,
+          },
+          lianxianSettings: {
+            ...defaultConfig.lianxianSettings,
+            ...parsedConfig.lianxianSettings,
           },
           uciOptions: parsedConfig.uciOptions || {},
           jaiOptions: parsedConfig.jaiOptions || {},
@@ -471,6 +483,20 @@ export function useConfigManager() {
     await saveConfig()
   }
 
+  const getLianxianSettings = () => {
+    return configData.value.lianxianSettings || defaultConfig.lianxianSettings
+  }
+
+  const updateLianxianSettings = async (
+    settings: Partial<ConfigData['lianxianSettings']>
+  ): Promise<void> => {
+    configData.value.lianxianSettings = {
+      ...configData.value.lianxianSettings,
+      ...settings,
+    }
+    await saveConfig()
+  }
+
   // Reset all configuration to defaults
   const resetToDefaults = async (): Promise<void> => {
     configData.value = { ...defaultConfig }
@@ -509,6 +535,8 @@ export function useConfigManager() {
     updateMatchSettings,
     getHumanVsAiSettings,
     updateHumanVsAiSettings,
+    getLianxianSettings,
+    updateLianxianSettings,
     getEngines,
     saveEngines,
     getLastSelectedEngineId,

@@ -1517,6 +1517,9 @@
       )
       return
     }
+    if ((window as any).__LIANXIAN_MODE__) {
+      return
+    }
 
     // If the engine is thinking but it's not the AI's turn, stop the analysis first
     if (isThinking.value && !isCurrentAiTurnNow()) {
@@ -2505,6 +2508,9 @@
     )
     // Only execute best move when it's AI's turn.
     // The isThinking check was removed because the new isStopping flag in useUciEngine handles stale bestmove commands more reliably.
+    if ((window as any).__LIANXIAN_MODE__) {
+      return
+    }
     if (isEngineLoaded.value && isCurrentAiTurnNow()) {
       console.log(`[DEBUG] BESTMOVE_WATCHER: Condition met. Playing move.`)
       // Set the AI move flag before playing the move

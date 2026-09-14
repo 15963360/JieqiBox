@@ -21,6 +21,11 @@ export const isAndroidPlatform = (): boolean => {
   return false
 }
 
+export const isWindowsDesktop = (): boolean => {
+  if (typeof navigator === 'undefined') return false
+  return /windows/i.test(navigator.userAgent) && !isAndroidPlatform()
+}
+
 /**
  * Check if the current platform is mobile (Android, iOS, or other mobile devices)
  * Uses multiple detection methods for reliability
